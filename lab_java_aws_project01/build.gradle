@@ -2,10 +2,12 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.6'
 	id 'io.spring.dependency-management' version '1.1.6'
+	id 'com.palantir.docker' version '0.35.0'
 }
 
-group = 'br.com.josueao'
-version = '0.0.1-SNAPSHOT'
+group = 'celeiroao'
+version = '1.0.0'
+
 
 java {
 	toolchain {
@@ -15,6 +17,8 @@ java {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
+	maven { url 'https://repo.spring.io/snapshot' }
 }
 
 dependencies {
@@ -22,8 +26,35 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator:'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
 }
+
+tasks.register('unpack', Copy) {
+	dependsOn bootJar
+	from(zipTree(tasks.bootJar.outputs.files.singleFile))
+	into("build/dependency")
+}
+
+docker {
+	name "${project.group}/${project.name}"
+	buildx true
+	platform 'linux/amd64'
+	copySpec.from(tasks.unpack.outputs).into('dependency')
+	buildArgs(['DEPENDENCY' : "dependency"])
+}
+
+
+/*docker {
+	name "${project.group}/${project.name}"
+	files tasks.unpack.outputs.files
+	buildArgs(['DEPENDENCY': "build/dependency"])
+}*/
+
+
+
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+
