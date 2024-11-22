@@ -8,7 +8,6 @@ plugins {
 group = 'celeiroao'
 version = '1.0.0'
 
-
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
@@ -23,10 +22,17 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-actuator:'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
 
+springBoot {
+	mainClass = 'br.com.josueao.lab_java_aws_project01.LabJavaAwsProject01Application'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
 }
 
 tasks.register('unpack', Copy) {
@@ -36,25 +42,13 @@ tasks.register('unpack', Copy) {
 }
 
 docker {
-	name "${project.group}/${project.name}"
-	buildx true
-	platform 'linux/amd64'
-	copySpec.from(tasks.unpack.outputs).into('dependency')
-	buildArgs(['DEPENDENCY' : "dependency"])
+	name "${project.group}/${project.name}:${project.version}"
+	files tasks.bootJar.outputs.files
+	buildArgs(['JAR_FILE': "${tasks.bootJar.archiveFileName.get()}"])
+
 }
 
 
-/*docker {
-	name "${project.group}/${project.name}"
-	files tasks.unpack.outputs.files
-	buildArgs(['DEPENDENCY': "build/dependency"])
-}*/
-
-
-
-
-tasks.named('test') {
-	useJUnitPlatform()
+bootJar {
+	archiveFileName = "${project.name}-${project.version}.jar"
 }
-
-

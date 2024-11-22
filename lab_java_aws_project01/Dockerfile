@@ -1,10 +1,8 @@
 FROM eclipse-temurin:17-jdk-alpine
 VOLUME /tmp
-ARG DEPENDENCY=target/dependency
-
-COPY ${DEPENDENCY}/BOOT-INF/lib /app/lib
-COPY ${DEPENDENCY}/META-INF /app/META-INF
-COPY ${DEPENDENCY}/BOOT-INF/classes /app
-
-ENTRYPOINT ["java","-cp","app:app/lib/*","com.josueao.lab_java_aws_project01.LabJavaAwsProject01Application"]
+ARG JAR_FILE=build/libs/*.jar
+COPY ${JAR_FILE} /app.jar
+ENV CONTAINER_NAME=lab_java_aws_project01
+ENTRYPOINT ["java", "-jar", "/app.jar"]
+RUN echo "Copying JAR from ${JAR_FILE}"
 
